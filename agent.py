@@ -1,15 +1,41 @@
 import os
 import requests
+import random
 from google import genai
 
-# This loads our secure key from GitHub automatically
+# Initialize clients using safe environment vectors
 client = genai.Client()
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+def log_activity_to_supabase(subreddit, title, context, status):
+    """Pushes a clear structured metric row to your free database tracker."""
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        print("Skipping database logging: Credentials not configured.")
+        return
+        
+    endpoint = f"{SUPABASE_URL}/rest/v1/agent_activity_logs"
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+    }
+    
+    payload = {
+        "targeted_subreddit": subreddit,
+        "trend_title": title,
+        "extracted_problem": context[:500],  # Store a snapshot snippet
+        "status": status
+    }
+    
+    try:
+        requests.post(endpoint, headers=headers, json=payload)
+        print("Activity successfully recorded in your database dashboard.")
+    except Exception as e:
+        print(f"Failed to push analytics to database: {e}")
 
 def get_viral_trend():
-    """Scrapes a random high-value community to find a problem trend."""
-    import random # Imports the ability to choose randomly
-    
-    # Master list of your target niche communities
     target_urls = [
         "https://www.reddit.com/r/SaaS/hot.json?limit=3",
         "https://www.reddit.com/r/GrowthHacking/hot.json?limit=3",
@@ -18,24 +44,27 @@ def get_viral_trend():
         "https://www.reddit.com/r/marketing/hot.json?limit=3"
     ]
     
-    # The agent picks a different community from the list every time it runs
-    url = random.choice(target_urls)
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    chosen_url = random.choice(target_urls)
+    subreddit_name = chosen_url.split("/r/")[1].split("/")[0]
+    headers = {'User-Agent': 'Mozilla/5.0'}
     
     try:
-        res = requests.get(url, headers=headers).json()
-        # We grab the second post [1] to skip pinned moderator announcements
+        res = requests.get(chosen_url, headers=headers).json()
         top_post = res['data']['children'][1]['data']
-        return {"title": top_post['title'], "text": top_post['selftext'][:1500]}
-    except Exception as e:
-        print(f"Forced Fallback activated due to rate limits: {e}")
         return {
+            "subreddit": subreddit_name,
+            "title": top_post['title'], 
+            "text": top_post['selftext'][:1500]
+        }
+    except Exception as e:
+        print(f"Forced Fallback activated: {e}")
+        return {
+            "subreddit": "Fallback Loop",
             "title": "Scaling AI Workflows in 2026", 
             "text": "Users looking for high-performance, automated pipeline optimizations."
         }
 
 def build_marketing_page(title, context):
-    """Sends the trend data to Gemini to design a highly specific conversion page for INFIERA AI."""
     prompt = f"""
     You are an elite growth engineering and conversion marketing expert.
     A major discussion/problem is happening right now in your target niche: "{title}"
@@ -49,7 +78,7 @@ def build_marketing_page(title, context):
     
     CRITICAL INSTRUCTION: You must explicitly showcase "INFIERA AI" as the ultimate automated platform to solve or optimize this specific scenario. Craft a compelling pitch explaining how INFIERA AI eliminates this bottleneck. Embed a highly visible action button that links directly to your landing page or web application.
     
-    IMPORTANT: Return ONLY the raw valid HTML code starting directly with <!DOCTYPE html>. Do not wrap the code block in markdown fences like ```html or add conversational introductions. Just output the clean raw layout code.
+    IMPORTANT: Return ONLY the raw valid HTML code starting directly with <!DOCTYPE html>. Do not wrap the code block in markdown fences or add conversational introductions. Just output the clean raw layout code.
     """
     
     response = client.models.generate_content(
@@ -61,25 +90,26 @@ def build_marketing_page(title, context):
 def main():
     print("Agent Core online. Fetching global trend metrics...")
     trend = get_viral_trend()
-    print(f"Target locked onto trend: {trend['title']}")
+    print(f"Target locked onto /r/{trend['subreddit']}: {trend['title']}")
     
-    print("Sending blueprint to Gemini Core for processing...")
-    html_content = build_marketing_page(trend['title'], trend['text'])
-    
-    # Strip any stray markdown syntax if the model accidentally returns it
-    clean_html = html_content.replace("```html", "").replace("```", "").strip()
-    
-    # Write the asset directly to our working folder
-    with open("index.html", "w", encoding="utf-8") as f:
-        f.write(clean_html)
-    print("Success. Production-ready index.html asset built.")
-    
-    # --- CRITICAL FIX START ---
-    # Create an empty .nojekyll file to stop GitHub Pages from using Jekyll and crashing
-    with open(".nojekyll", "w", encoding="utf-8") as f:
-        f.write("")
-    print("Bypass flag created: .nojekyll file successfully added.")
-    # --- CRITICAL FIX END ---
+    status_flag = "Success"
+    try:
+        print("Sending blueprint to Gemini Core for processing...")
+        html_content = build_marketing_page(trend['title'], trend['text'])
+        clean_html = html_content.replace("```html", "").replace("```", "").strip()
+        
+        with open("index.html", "w", encoding="utf-8") as f:
+            f.write(clean_html)
+            
+        with open(".nojekyll", "w", encoding="utf-8") as f:
+            f.write("")
+        print("Success. Production-ready index.html asset built.")
+    except Exception as e:
+        print(f"Execution Error encountered: {e}")
+        status_flag = f"Failed: {str(e)}"
+        
+    # Commit execution step records directly to your tracker
+    log_activity_to_supabase(trend['subreddit'], trend['title'], trend['text'], status_flag)
 
 if __name__ == "__main__":
     main()
