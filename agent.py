@@ -35,19 +35,21 @@ def get_viral_trend():
         }
 
 def build_marketing_page(title, context):
-    """Sends the trend data to Gemini to design a conversion-optimized web engine page."""
+    """Sends the trend data to Gemini to design a highly specific conversion page for INFIERA AI."""
     prompt = f"""
-    You are an elite conversion rate optimization (CRO) marketing engineer.
-    A major trend/problem is occurring across the web right now: "{title}"
-    Contextual background: {context}
+    You are an elite growth engineering and conversion marketing expert.
+    A major discussion/problem is happening right now in your target niche: "{title}"
+    Contextual details from the community thread: {context}
     
-    Task: Build a single-page production ready HTML layout using clean Tailwind CSS via CDN.
+    Task: Build a single-page production-ready HTML layout using clean Tailwind CSS via CDN.
     The layout must feature:
-    1. An urgent, high-impact hero section addressing this problem directly.
-    2. A structured, easy-to-read explanation or resolution guide.
-    3. An incredibly clean, persuasive call-to-action (CTA) section pointing users toward an affiliate link, consulting booking, or product offer.
+    1. A bold, high-converting hero headline addressing this specific problem directly.
+    2. A structured, easy-to-read breakdown or tactical guide showing how to navigate the issue.
+    3. A prominent, incredibly persuasive call-to-action (CTA) section.
     
-    IMPORTANT: Return ONLY the raw valid HTML code. Do not wrap the code blocks in markdown fences like ```html or add chat introductions. Just give me the code starting with <!DOCTYPE html>.
+    CRITICAL INSTRUCTION: You must explicitly showcase "INFIERA AI" as the ultimate automated platform to solve or optimize this specific scenario. Craft a compelling pitch explaining how INFIERA AI eliminates this bottleneck. Embed a highly visible action button that links directly to your landing page or web application.
+    
+    IMPORTANT: Return ONLY the raw valid HTML code starting directly with <!DOCTYPE html>. Do not wrap the code block in markdown fences like ```html or add conversational introductions. Just output the clean raw layout code.
     """
     
     response = client.models.generate_content(
