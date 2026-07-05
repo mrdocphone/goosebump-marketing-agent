@@ -59,6 +59,13 @@ def main():
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(clean_html)
     print("Success. Production-ready index.html asset built.")
+    
+    # --- CRITICAL FIX START ---
+    # Create an empty .nojekyll file to stop GitHub Pages from using Jekyll and crashing
+    with open(".nojekyll", "w", encoding="utf-8") as f:
+        f.write("")
+    print("Bypass flag created: .nojekyll file successfully added.")
+    # --- CRITICAL FIX END ---
 
 if __name__ == "__main__":
     main()
