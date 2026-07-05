@@ -6,19 +6,31 @@ from google import genai
 client = genai.Client()
 
 def get_viral_trend():
-    """Scrapes Reddit to find out what technical/system updates people are struggling with."""
-    url = "https://www.reddit.com/r/sysadmin/hot.json?limit=2"
-    # A standard user agent prevents Reddit from blocking our cloud runner
+    """Scrapes a random high-value community to find a problem trend."""
+    import random # Imports the ability to choose randomly
+    
+    # Master list of your target niche communities
+    target_urls = [
+        "https://www.reddit.com/r/SaaS/hot.json?limit=3",
+        "https://www.reddit.com/r/GrowthHacking/hot.json?limit=3",
+        "https://www.reddit.com/r/startups/hot.json?limit=3",
+        "https://www.reddit.com/r/ArtificialInteligence/hot.json?limit=3",
+        "https://www.reddit.com/r/marketing/hot.json?limit=3"
+    ]
+    
+    # The agent picks a different community from the list every time it runs
+    url = random.choice(target_urls)
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
     
     try:
         res = requests.get(url, headers=headers).json()
-        top_post = res['data']['children'][0]['data']
+        # We grab the second post [1] to skip pinned moderator announcements
+        top_post = res['data']['children'][1]['data']
         return {"title": top_post['title'], "text": top_post['selftext'][:1500]}
     except Exception as e:
         print(f"Forced Fallback activated due to rate limits: {e}")
         return {
-            "title": "Critical Infrastructure Integration Anomalies", 
+            "title": "Scaling AI Workflows in 2026", 
             "text": "Users looking for high-performance, automated pipeline optimizations."
         }
 
