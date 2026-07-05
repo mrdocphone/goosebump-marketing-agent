@@ -2,12 +2,24 @@ name: Execute Goosebump Marketing Agent
 
 on:
   schedule:
-    - cron: '0 */12 * * *' # Automatically runs twice a day
-  workflow_dispatch: # Allows you to manually trigger it by pressing a button
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
+
+# CRITICAL NEW PERMISSIONS: This grants the agent direct server access
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    
+    # Declares the target live environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -27,8 +39,11 @@ jobs:
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       run: python agent.py
 
-    - name: Deploy Live to GitHub Pages
-      uses: JamesIves/github-pages-deploy-action@v4
+    - name: Package Website Files
+      uses: actions/upload-pages-artifact@v3
       with:
-        folder: . # Deploys the root folder where index.html is saved
-        branch: gh-pages # Pushes it to the free web-hosting branch
+        path: '.' # Packages everything the agent just built
+
+    - name: Push to Live Internet
+      id: deployment
+      uses: actions/deploy-pages@v4
