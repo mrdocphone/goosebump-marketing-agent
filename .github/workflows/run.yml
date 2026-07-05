@@ -2,8 +2,8 @@ name: Execute Goosebump Marketing Agent
 
 on:
   schedule:
-    - cron: '0 */12 * * *' # This makes it run automatically every 12 hours
-  workflow_dispatch: # This adds a button so you can run it manually anytime
+    - cron: '0 */12 * * *' # Automatically runs twice a day
+  workflow_dispatch: # Allows you to manually trigger it by pressing a button
 
 jobs:
   build-and-deploy:
@@ -23,10 +23,12 @@ jobs:
     - name: Run Marketing Brain
       env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       run: python agent.py
 
     - name: Deploy Live to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         folder: . # Deploys the root folder where index.html is saved
-        branch: gh-pages # Pushes it to a special web-hosting branch
+        branch: gh-pages # Pushes it to the free web-hosting branch
