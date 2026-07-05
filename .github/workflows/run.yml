@@ -1,0 +1,32 @@
+name: Execute Goosebump Marketing Agent
+
+on:
+  schedule:
+    - cron: '0 */12 * * *' # This makes it run automatically every 12 hours
+  workflow_dispatch: # This adds a button so you can run it manually anytime
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python Runtime
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install System Dependencies
+      run: pip install requests google-genai
+
+    - name: Run Marketing Brain
+      env:
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      run: python agent.py
+
+    - name: Deploy Live to GitHub Pages
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: . # Deploys the root folder where index.html is saved
+        branch: gh-pages # Pushes it to a special web-hosting branch
