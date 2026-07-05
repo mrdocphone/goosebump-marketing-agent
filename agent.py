@@ -76,7 +76,7 @@ def build_marketing_page(title, context):
     2. A structured, easy-to-read breakdown or tactical guide showing how to navigate the issue.
     3. A prominent, incredibly persuasive call-to-action (CTA) section.
     
-    CRITICAL INSTRUCTION: You must explicitly showcase "INFIERA AI" as the ultimate automated platform to solve or optimize this specific scenario. Craft a compelling pitch explaining how INFIERA AI eliminates this bottleneck. Embed a highly visible action button of url "infieraai.com" that links directly to your landing page or web application.
+    CRITICAL INSTRUCTION: You must explicitly showcase "INFIERA AI" as the ultimate automated platform to solve or optimize this specific scenario. Craft a compelling pitch explaining how INFIERA AI eliminates this bottleneck. Embed a highly visible action button that takes to landing page url "infieraai.com" that links directly to your landing page or web application.
     
     IMPORTANT: Return ONLY the raw valid HTML code starting directly with <!DOCTYPE html>. Do not wrap the code block in markdown fences or add conversational introductions. Just output the clean raw layout code.
     """
